@@ -31,18 +31,57 @@ fn main() {
     }
 
     //infix to prefix to parse through the calculation and have the correct order of operations
-    // let reversed_infix = result.reverse();
+    let mut output: Vec<&str> = Vec::new();
+    let mut operators: Vec<&str> = Vec::new();
 
-    // let mut output: Vec<&str> = Vec::new();
-    // let mut operators: Vec<&str> = Vec::new();
+    let numeric_pattern = Regex::new(r"\d+").unwrap();
 
-    // let mut numeric_pattern = Regex::new(r"\d+").unwrap();
+    //here I put the infix to postfix while maintaining the order of operations
+    for i in result.iter().rev(){
+        if numeric_pattern.is_match(i){
+            output.push(i);
+        } else {
+            while !operators.is_empty() 
+                && (order(*i) < order(operators[operators.len() - 1]))
+                {
+                    output.push(operators.pop().unwrap());
+                }
+            operators.push(*i);
+        }
+    }
 
-    // for i in reversed_infix.iter(){
-    //     if numeric_pattern.is_match(i){
-    //         output.push(i);
-    //     } else {
-            
-    //     }
-    // }
+    //I pop the remaining operators from the stack to the output
+    while !operators.is_empty(){
+        output.push(operators.pop().unwrap());
+    }
+
+    let mut stack: Vec<_> = vec![];
+    
+    for i in output.iter() {
+        if numeric_pattern.is_match(i){
+            stack.push(i.parse::<i32>().unwrap());
+        } else {
+            let a = stack.pop().unwrap();
+            let b = stack.pop().unwrap();
+            let res = match *i{
+                "+" => a + b,
+                "-" => a - b,
+                "*" => a * b,
+                "/" => a / b,
+                _ => panic!("Unknown operator."),
+            };
+            stack.push(res);
+        }
+    }
+
+    println!("{}", stack.pop().unwrap());
+}
+
+// establishing precedence of operations
+fn order(operator: &str) -> i32{
+    match operator{
+        "+" | "-" => 1,
+        "*" | "/" => 2,
+        _ => 0,
+    }
 }
