@@ -1,22 +1,36 @@
 use regex::Regex;
 
 fn main() {
-    println!("This calculator supports addition(+), subtraction(-), multiplication(*), and division.(/)");
-    
+    println!("This calculator supports addition(+), subtraction(-), multiplication(*), and division(/)");
+
     let mut input = String::new();
     std::io::stdin().read_line(&mut input).unwrap();
 
-    //diving the string into numbers and operators
-    let pattern = Regex::new(r"(\d+|[-+*/])").unwrap();
-    let result: Vec<&str> = pattern.find_iter(&input).map(|m| m.as_str()).collect();
+    //process the input the given by the user and also check if the input was given correctly
+    let processed_input = process_input(&input);
 
-    //verify if the operators are correctly in place
+    //take the notation of input from infix to postfix
+    let postfix_notation = infix_to_postfix(&processed_input);
+
+    //calculate the input
+    let result = calculate_result(&postfix_notation);
+
+
+    println!("The result to the inputted calculation is: {result}");
+}
+
+fn process_input(input: &str) -> Vec<&str> {
+    //the pattern is made so we only take input numbers and the designated operators
+    let pattern = Regex::new(r"(\d+|[-+*/])").unwrap();
+    let result: Vec<&str> = pattern.find_iter(input).map(|m| m.as_str()).collect();
+
+    //check if the operators are put in place correctly
     let pattern_operators = Regex::new(r"[-+*/]").unwrap();
     let mut trigger = false;
 
-    for i in result.iter(){
-        if pattern_operators.is_match(i){
-            if trigger == true{
+    for i in result.iter() {
+        if pattern_operators.is_match(i) {
+            if trigger {
                 panic!("The operators weren't typed correctly in the calculator!");
             }
             trigger = true;
@@ -25,45 +39,49 @@ fn main() {
         }
     }
 
-    //this checks if there is an operator on the last position
-    if trigger == true{
+    if trigger {
         panic!("The operators weren't typed correctly in the calculator!");
     }
 
-    //infix to prefix to parse through the calculation and have the correct order of operations
+    result
+}
+
+//this function takes the infix notation to postfix while maintaining the order of operations correctly
+fn infix_to_postfix<'a>(input: &'a [&'a str]) -> Vec<&'a str> {
     let mut output: Vec<&str> = Vec::new();
     let mut operators: Vec<&str> = Vec::new();
-
     let numeric_pattern = Regex::new(r"\d+").unwrap();
 
-    //here I put the infix to postfix while maintaining the order of operations
-    for i in result.iter().rev(){
-        if numeric_pattern.is_match(i){
+    for i in input.iter().rev() {
+        if numeric_pattern.is_match(i) {
             output.push(i);
         } else {
-            while !operators.is_empty() 
-                && (order(*i) < order(operators[operators.len() - 1]))
-                {
-                    output.push(operators.pop().unwrap());
-                }
+            while !operators.is_empty() && order(*i) < order(operators[operators.len() - 1]) {
+                output.push(operators.pop().unwrap());
+            }
             operators.push(*i);
         }
     }
 
-    //I pop the remaining operators from the stack to the output
-    while !operators.is_empty(){
+    while !operators.is_empty() {
         output.push(operators.pop().unwrap());
     }
 
-    let mut stack: Vec<_> = vec![];
-    
-    for i in output.iter() {
-        if numeric_pattern.is_match(i){
+    output
+}
+
+//with the postfix notation we calculate the operation and return the final result
+fn calculate_result(input: &[&str]) -> i32 {
+    let mut stack: Vec<i32> = Vec::new();
+    let numeric_pattern = Regex::new(r"\d+").unwrap();
+
+    for i in input.iter() {
+        if numeric_pattern.is_match(i) {
             stack.push(i.parse::<i32>().unwrap());
         } else {
             let a = stack.pop().unwrap();
             let b = stack.pop().unwrap();
-            let res = match *i{
+            let res = match *i {
                 "+" => a + b,
                 "-" => a - b,
                 "*" => a * b,
@@ -74,12 +92,12 @@ fn main() {
         }
     }
 
-    println!("{}", stack.pop().unwrap());
+    stack.pop().unwrap()
 }
 
-// establishing precedence of operations
-fn order(operator: &str) -> i32{
-    match operator{
+// Establishing precedence of operations
+fn order(operator: &str) -> i32 {
+    match operator {
         "+" | "-" => 1,
         "*" | "/" => 2,
         _ => 0,

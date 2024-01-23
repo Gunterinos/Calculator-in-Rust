@@ -1,5 +1,23 @@
-I made this calculator as a way to learn and see how Rust works.
+# Rust Calculator
 
-The calculator is really simple, it supports addition, subtraction, multiplication, and division.
+## Overview
 
-It works by taking in an input from the user and then translates that input for infix to prefix to calculate the result.
+This calculator was developed as an exploration into the Rust programming language, serving as both a learning experience and a practical application.
+
+## Features
+
+- Addition (+), Subtraction (-), Multiplication (*), and Division (/)
+
+## How It Works
+
+1. **User Input:**
+   The calculator starts by soliciting input from the user, allowing them to perform basic arithmetic operations. The user can input expressions containing numbers and operators, such as `1 + 2 * 4 / 4`.
+
+2. **Input Processing & Operator Verification:**
+   The input is processed into a sequence of numbers and operators, using regular expressions to extract meaningful tokens. The calculator checks if the operators are correctly placed, preventing common input mistakes.
+
+3. **Infix to Prefix Conversion:**
+   To facilitate the correct order of operations, the calculator converts the infix expression to postfix notation.
+
+4. **Calculation:**
+   The final step involves evaluating the postfix expression to produce the result. The calculator uses a stack-based approach to handle numbers and operators, applying them in the order of operations.
